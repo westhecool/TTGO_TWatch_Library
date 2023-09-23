@@ -1,3 +1,8 @@
+A modified version of the T-Watch library to support LVGL v8.2.0.<br>
+A few notes:
+- The libraries "lv_fs_if" and "lv_lib_png" were removed.
+- This library assumes that you already have LVGL installed globally ie the Arduino package manager.
+<hr>
 <h1 align = "center">🌟LilyGO T-Watch🌟</h1>
 
 **English | [中文](docs/details_cn.md)**

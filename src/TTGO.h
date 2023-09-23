@@ -78,16 +78,16 @@ typedef FocalTech_Class CapacitiveTouch ;
 #endif
 
 #ifdef LILYGO_WATCH_LVGL
-#include "lvgl/lvgl.h"
+#include <lvgl.h>
 #endif
 
-#ifdef LILYGO_WATCH_LVGL_FS
-#include "libraries/lv_fs_if/lv_fs_if.h"
-#endif
+//#ifdef LILYGO_WATCH_LVGL_FS
+//#include "libraries/lv_fs_if/lv_fs_if.h"
+//#endif
 
-#ifdef LILYGO_WATCH_LVGL_DECODER
-#include "libraries/lv_lib_png/lv_png.h"
-#endif
+//#ifdef LILYGO_WATCH_LVGL_DECODER
+//#include "libraries/lv_lib_png/lv_png.h"
+//#endif
 
 #ifdef LILYGO_WATCH_HAS_AXP202
 #include "drive/axp/axp20x.h"
@@ -757,9 +757,8 @@ public:
             return false;
         }
         lv_init();
-        lv_indev_drv_t indev_drv;
         lv_disp_drv_init(&disp_drv);
-        static lv_disp_buf_t disp_buf;
+        static lv_disp_draw_buf_t disp_buf;
 
 #ifdef  TWATCH_USE_PSRAM_ALLOC_LVGL
         if (psramFound()) {
@@ -789,9 +788,9 @@ public:
 
 
 #ifdef  TWATCH_LVGL_DOUBLE_BUFFER
-        lv_disp_buf_init(&disp_buf, buf1, buf2, LVGL_BUFFER_SIZE);
+        lv_disp_draw_buf_init(&disp_buf, buf1, buf2, LVGL_BUFFER_SIZE);
 #else
-        lv_disp_buf_init(&disp_buf, buf1, NULL, LVGL_BUFFER_SIZE);
+        lv_disp_draw_buf_init(&disp_buf, buf1, NULL, LVGL_BUFFER_SIZE);
 #endif
 
 
@@ -799,11 +798,12 @@ public:
         disp_drv.ver_res = tft->height();
         disp_drv.flush_cb = disp_flush;
         /*Set a display buffer*/
-        disp_drv.buffer = &disp_buf;
+        disp_drv.draw_buf = &disp_buf;
         lv_disp_drv_register(&disp_drv);
 
 #if  defined(LILYGO_WATCH_HAS_TOUCH)
         /*Register a touchpad input device*/
+        static lv_indev_drv_t indev_drv;
         lv_indev_drv_init(&indev_drv);
         indev_drv.type = LV_INDEV_TYPE_POINTER;
         indev_drv.read_cb = touchpad_read;
@@ -815,20 +815,20 @@ public:
 #define LILYGO_WATCH_LVGL_FS_SPIFFS
 #endif
 
-#ifdef LILYGO_WATCH_LVGL_FS
-#if  defined(LILYGO_WATCH_LVGL_FS_SPIFFS)
-        SPIFFS.begin(true, "/fs");
-#else
-        //TODO:
-#endif  /*LILYGO_WATCH_LVGL_FS_SPIFFS*/
-
-        lv_fs_if_init();
-
-#ifdef LILYGO_WATCH_LVGL_DECODER
-        lv_png_init();
-#endif
-
-#endif  /*LILYGO_WATCH_LVGL_FS*/
+//#ifdef LILYGO_WATCH_LVGL_FS
+//#if  defined(LILYGO_WATCH_LVGL_FS_SPIFFS)
+//        SPIFFS.begin(true, "/fs");
+//#else
+//        //TODO:
+//#endif  /*LILYGO_WATCH_LVGL_FS_SPIFFS*/
+//
+//        lv_fs_if_init();
+//
+//#ifdef LILYGO_WATCH_LVGL_DECODER
+//        lv_png_init();
+//#endif
+//
+//#endif  /*LILYGO_WATCH_LVGL_FS*/
 
         tickTicker = new Ticker();
         startLvglTick();
@@ -1589,17 +1589,16 @@ protected:
     }
 
 #if defined(LILYGO_WATCH_LVGL) && defined(LILYGO_WATCH_HAS_TOUCH)
-    static bool touchpad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data)
+    static void touchpad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data)
     {
-
-#if (defined(LILYGO_WATCH_2020_V1) || defined(LILYGO_WATCH_2020_V2) || defined(LILYGO_WATCH_2020_V3)|| defined(LILYGO_WATCH_2019_WITH_TOUCH)) &&  defined(LILYGO_WATCH_LVGL)
+#if (defined(LILYGO_WATCH_2020_V1) || defined(LILYGO_WATCH_2020_V2) || defined(LILYGO_WATCH_2020_V3) || defined(LILYGO_WATCH_2019_WITH_TOUCH)) &&  defined(LILYGO_WATCH_LVGL)
         /*
             Interrupt polling is only compatible with 2020-V1, 2020-V2,2019, others are not currently adapted
         */
         static int16_t x, y;
         if (xEventGroupGetBits(_ttgo->_tpEvent) & TOUCH_IRQ_BIT) {
             xEventGroupClearBits(_ttgo->_tpEvent, TOUCH_IRQ_BIT);
-            data->state = _ttgo->getTouch(x, y) ?  LV_INDEV_STATE_PR : LV_INDEV_STATE_REL;
+            data->state = _ttgo->getTouch(x, y) ? LV_INDEV_STATE_PR : LV_INDEV_STATE_REL;
             data->point.x = x;
             data->point.y = y;
         } else {
@@ -1608,10 +1607,10 @@ protected:
             data->point.y = y;
         }
 #else
-        data->state = _ttgo->getTouch(data->point.x, data->point.y) ?  LV_INDEV_STATE_PR : LV_INDEV_STATE_REL;
+        data->state = _ttgo->getTouch(data->point.x, data->point.y) ? LV_INDEV_STATE_PR : LV_INDEV_STATE_REL;
 #endif /*LILYGO_WATCH_2020_V1 & LILYGO_WATCH_2020_V2*/
 
-        return false; /*Return false because no moare to be read*/
+        //return false; /*Return false because no moare to be read*/ (Newer versions of LVGL don't require this)
     }
 
 #endif /*LILYGO_WATCH_LVGL , LILYGO_WATCH_HAS_TOUCH*/
