@@ -589,6 +589,26 @@ public:
 #endif  /*LILYGO_WATCH_2020_V1*/
     }
 
+    /*
+    * @brief  It will undo "powerOff()"
+    * * */
+    void powerOn()
+    {
+#ifndef LILYGO_WATCH_2020_V1
+        power->setPowerOutPut(AXP202_EXTEN, true);
+        power->setPowerOutPut(AXP202_LDO4, true);
+        power->setPowerOutPut(AXP202_DCDC2, true);
+        power->setPowerOutPut(AXP202_LDO3, true);
+        power->setPowerOutPut(AXP202_LDO2, true);
+#else
+        power->setPowerOutPut(AXP202_EXTEN, true);
+        power->setPowerOutPut(AXP202_LDO4, true);
+        power->setPowerOutPut(AXP202_DCDC2, true);
+        power->setPowerOutPut(AXP202_LDO3, true);
+        // power->setPowerOutPut(AXP202_LDO2, true);
+#endif  /*LILYGO_WATCH_2020_V1*/
+    }
+
     /**
     * @brief Turn on the peripheral power,
     * usually control the power of different backplanes,
