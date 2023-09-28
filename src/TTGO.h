@@ -849,9 +849,10 @@ public:
 //#endif
 //
 //#endif  /*LILYGO_WATCH_LVGL_FS*/
-
-        tickTicker = new Ticker();
-        startLvglTick();
+        #ifndef LILYGO_WATCH_LVGL_USE_CUSTOM_TICKER 
+            tickTicker = new Ticker();
+            startLvglTick();
+        #endif
         return true;
     }
 
